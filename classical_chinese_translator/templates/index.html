@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <!-- 标题和描述 -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 text-primary mb-3">智能文言文翻译器</h1>
+        <p class="lead text-muted">专业、高效、准确的文言文翻译</p>
+    </div>
+
+    <!-- 主翻译区域 -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg">
+                <div class="card-body p-4">
+                    <!-- 模型选择 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="modelSelect" class="form-label">翻译模型：</label>
+                            <select id="modelSelect" class="form-select">
+                                {% for model in models %}
+                                <option value="{{ model.key }}" {% if model.is_default %}selected{% endif %}>
+                                    {{ model.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="promptType" class="form-label">翻译模式：</label>
+                            <select id="promptType" class="form-select">
+                                <option value="default">标准翻译</option>
+                                <option value="detailed">详细解释</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="inputText" class="form-label fw-bold">
+                                        <i class="fas fa-keyboard me-2"></i>输入文言文
+                                    </label>
+                                    <span class="text-muted small" id="inputCounter">0/2000</span>
+                                </div>
+                                <textarea 
+                                    id="inputText" 
+                                    class="form-control" 
+                                    rows="8" 
+                                    placeholder="在此输入文言文..."
+                                    maxlength="2000"
+                                ></textarea>
+                                <div class="mt-2">
+                                    <button id="translateBtn" class="btn btn-primary">
+                                        <i class="fas fa-language me-2"></i>AI智能翻译
+                                    </button>
+                                    <button id="clearBtn" class="btn btn-outline-secondary ms-2">
+                                        <i class="fas fa-eraser me-2"></i>清空
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 输出区域 -->
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="outputText" class="form-label fw-bold">
+                                        <i class="fas fa-globe me-2"></i>翻译结果
+                                    </label>
+                                    <div>
+                                        <button id="copyBtn" class="btn btn-sm btn-outline-primary" disabled>
+                                            <i class="fas fa-copy me-1"></i>复制
+                                        </button>
+                                        <button id="audioBtn" class="btn btn-sm btn-outline-success ms-1" disabled>
+                                            <i class="fas fa-volume-up me-1"></i>朗读
+                                        </button>
+                                    </div>
+                                </div>
+                                <textarea 
+                                    id="outputText" 
+                                    class="form-control" 
+                                    rows="8" 
+                                    placeholder="翻译结果将显示在这里..."
+                                    readonly
+                                ></textarea>
+                                <div class="mt-2">
+                                    <small class="text-muted" id="translationInfo"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能卡片区域 -->
+    <div class="row mt-5">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>翻译历史
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="historyList">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-clock fa-2x mb-2"></i>
+                            <p>暂无翻译历史</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadHistory()">
+                            <i class="fas fa-refresh me-1"></i>刷新历史
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>使用统计
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="statsList">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                            <p>正在加载统计信息...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 历史记录模态框 -->
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-history me-2"></i>翻译历史
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="historySearch" class="form-control" placeholder="搜索历史记录...">
+                </div>
+                <div id="historyModalContent">
+                    <!-- 历史记录内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计信息模态框 -->
+<div class="modal fade" id="statsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-chart-bar me-2"></i>使用统计
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="statsModalContent">
+                    <!-- 统计信息内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// 初始化页面
+document.addEventListener('DOMContentLoaded', function() {
+    loadHistory();
+    loadStats();
+    
+    // 输入计数器
+    const inputText = document.getElementById('inputText');
+    const counter = document.getElementById('inputCounter');
+    
+    inputText.addEventListener('input', function() {
+        const length = this.value.length;
+        counter.textContent = `${length}/2000`;
+        
+        if (length > 1800) {
+            counter.classList.add('text-warning');
+        } else {
+            counter.classList.remove('text-warning');
+        }
+    });
+});
+</script>
+{% endblock %}
