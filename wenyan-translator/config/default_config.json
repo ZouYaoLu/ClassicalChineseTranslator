@@ -1,0 +1,27 @@
+{
+  "models": {
+    "qwen": {
+      "name": "通义千问",
+      "enabled": true,
+      "api_key": "",
+      "model": "qwen-max",
+      "prompt": "你是一个专业的文言文翻译专家。请将以下文言文翻译成现代白话文，要求翻译准确、通顺、符合现代汉语习惯。只需要返回翻译结果，不要包含其他说明。\n\n文言文：{text}"
+    },
+    "openai": {
+      "name": "OpenAI GPT",
+      "enabled": false,
+      "api_key": "",
+      "model": "gpt-3.5-turbo",
+      "base_url": "https://api.openai.com/v1",
+      "prompt": "你是一个专业的文言文翻译专家。请将以下文言文翻译成现代白话文，要求翻译准确、通顺、符合现代汉语习惯。只需要返回翻译结果，不要包含其他说明。\n\n文言文：{text}"
+    }
+  },
+  "cache": {
+    "enabled": true,
+    "max_size": 10000
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 5000
+  }
+}
